@@ -1,192 +1,87 @@
 <!DOCTYPE html>
-<html lang="id">
+<html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Practice Mode - Spelling Bee</title>
+<title>Practice Mode – Spelling Bee</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link rel="stylesheet" href="assets/css/main.css">
+<link href="https://fonts.googleapis.com/css2?family=Henny+Penny&family=Comfortaa&display=swap" rel="stylesheet">
 
+<style>
+body{
+  margin:0;
+  font-family:'Comfortaa',sans-serif;
+  background:#eef6f1;
+}
+#top{
+  padding:20px;
+  text-align:center;
+}
+#title{
+  font-family:'Henny Penny';
+  font-size:40px;
+  color:#38b6ff;
+}
+#desc{
+  font-size:14px;
+  margin-top:6px;
+}
+.card{
+  margin:30px auto;
+  max-width:360px;
+  background:#fff;
+  padding:24px;
+  border-radius:20px;
+  box-shadow:0 8px 18px rgba(0,0,0,.15);
+}
+input,select,button{
+  width:100%;
+  height:44px;
+  border-radius:12px;
+  border:none;
+  margin-top:10px;
+  font-size:15px;
+}
+button{
+  background:#f2e590;
+  font-weight:900;
+  color:#38b6ff;
+  cursor:pointer;
+}
+#status{
+  margin-top:16px;
+  font-weight:900;
+  text-align:center;
+}
+#timer{
+  font-size:26px;
+  text-align:center;
+  margin-top:10px;
+}
+</style>
 </head>
+
 <body>
 
-<div class="app">
-
-  <!-- HEADER -->
-  <div class="header">
-    <h1 class="title">Practice Mode</h1>
-    <p class="subtitle">
-      Dengarkan kata, ketik jawaban yang benar, dan lihat hasil latihanmu.
-    </p>
-  </div>
-
-  <!-- SETUP -->
-  <div class="card" id="setupBox">
-    <input id="studentName" placeholder="Nama kamu" class="input">
-    
-    <select id="levelSelect" class="input">
-      <option value="">Pilih Level</option>
-      <option value="1">Level 1</option>
-      <option value="2">Level 2</option>
-      <option value="3">Level 3</option>
-    </select>
-
-    <button class="btn primary" onclick="startPractice()">START</button>
-  </div>
-
-  <!-- PRACTICE AREA -->
-  <div class="card hidden" id="practiceBox">
-
-    <div class="timer" id="timer">20</div>
-
-    <input id="answerInput" class="input big" placeholder="Ketik jawaban di sini">
-
-    <button class="btn secondary" onclick="submitAnswer()">SUBMIT</button>
-  </div>
-
-  <!-- RESULT -->
-  <div class="card hidden" id="resultBox">
-    <h3>Hasil Latihan</h3>
-    <p id="scoreText"></p>
-    <button class="btn primary" onclick="exportResult()">Export Nilai</button>
-  </div>
-
+<div id="top">
+  <div id="title">Practice Mode</div>
+  <div id="desc">Latihan mandiri dengan soal acak & penilaian otomatis</div>
 </div>
 
-<script>
-/* ===== AUDIO & SPEECH ===== */
-const audioCtx = new (window.AudioContext || webkitAudioContext)();
-function beep(freq=700,dur=0.07){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.frequency.value=freq;
-  g.gain.value=0.04;
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime+dur);
-}
-function bell(){
-  const o=audioCtx.createOscillator();
-  const g=audioCtx.createGain();
-  o.frequency.setValueAtTime(900,audioCtx.currentTime);
-  o.frequency.exponentialRampToValueAtTime(400,audioCtx.currentTime+1);
-  g.gain.setValueAtTime(0.2,audioCtx.currentTime);
-  g.gain.exponentialRampToValueAtTime(0.001,audioCtx.currentTime+1);
-  o.connect(g); g.connect(audioCtx.destination);
-  o.start(); o.stop(audioCtx.currentTime+1);
-}
-function speak(t){
-  return new Promise(r=>{
-    const u=new SpeechSynthesisUtterance(t);
-    u.lang="en-US";
-    u.onend=r;
-    speechSynthesis.speak(u);
-  });
-}
-const wait = ms => new Promise(r=>setTimeout(r,ms));
+<div class="card">
+  <input id="studentName" placeholder="Nama siswa">
+  <select id="level">
+    <option value="">Pilih level</option>
+    <option value="1">Level 1</option>
+    <option value="2">Level 2</option>
+    <option value="3">Level 3</option>
+  </select>
+  <button onclick="startPractice()">START PRACTICE</button>
 
-/* ===== DATA ===== */
-let questions=[], session=[], index=0, score=0, results=[];
-let timerInt;
+  <div id="timer"></div>
+  <div id="status"></div>
+</div>
 
-/* ===== LOAD CSV ===== */
-fetch("data/questions.csv")
-.then(r=>r.text())
-.then(t=>{
-  const lines=t.trim().split("\n").slice(1);
-  questions = lines.map(l=>{
-    const [level,word,sentence]=l.split(",");
-    return {level,word,sentence};
-  });
-});
-
-/* ===== START ===== */
-function startPractice(){
-  const name=studentName.value.trim();
-  const level=levelSelect.value;
-  if(!name || !level){ alert("Lengkapi nama dan level"); return; }
-
-  session = questions.filter(q=>q.level===level)
-                     .sort(()=>Math.random()-0.5)
-                     .slice(0,25);
-
-  setupBox.classList.add("hidden");
-  practiceBox.classList.remove("hidden");
-
-  index=0; score=0; results=[];
-  nextQuestion();
-}
-
-/* ===== TIMER ===== */
-function startTimer(){
-  let t=20;
-  timer.textContent=t;
-  beep();
-  timerInt=setInterval(()=>{
-    t--; timer.textContent=t;
-    if(t>0) beep();
-    if(t===0){
-      clearInterval(timerInt);
-      bell();
-      submitAnswer();
-    }
-  },1000);
-}
-
-/* ===== QUESTION FLOW ===== */
-async function nextQuestion(){
-  if(index>=session.length){
-    finish();
-    return;
-  }
-  const q=session[index];
-  answerInput.value="";
-  await speak(q.word);
-  await wait(400);
-  await speak(q.sentence);
-  await wait(400);
-  await speak(q.word);
-  startTimer();
-}
-
-/* ===== ANSWER ===== */
-function submitAnswer(){
-  clearInterval(timerInt);
-  const user=answerInput.value.trim().toLowerCase();
-  const correct=session[index].word.toLowerCase();
-  const isCorrect = user===correct;
-  if(isCorrect) score++;
-
-  results.push({
-    name: studentName.value,
-    answer: user,
-    correct: correct,
-    score: isCorrect?1:0
-  });
-
-  index++;
-  nextQuestion();
-}
-
-/* ===== FINISH ===== */
-function finish(){
-  practiceBox.classList.add("hidden");
-  resultBox.classList.remove("hidden");
-  scoreText.textContent = `Skor kamu: ${score} / ${session.length}`;
-}
-
-/* ===== EXPORT ===== */
-function exportResult(){
-  let csv="name,answer,correct,score\n";
-  results.forEach(r=>{
-    csv+=`${r.name},${r.answer},${r.correct},${r.score}\n`;
-  });
-  const blob=new Blob([csv],{type:"text/csv"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download="practice-result.csv";
-  a.click();
-}
-</script>
-
+<script src="js/practice.js"></script>
 </body>
 </html>
