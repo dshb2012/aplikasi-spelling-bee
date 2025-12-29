@@ -70,12 +70,11 @@ button{
 
 <body>
 
-<div id="top">
+<!-- ===== SCREEN 1 : START ===== -->
+<div id="startScreen" class="card">
   <div id="title">Practice Mode</div>
-  <div id="desc">Latihan mandiri dengan soal acak & penilaian otomatis</div>
-</div>
+  <p>Latihan mandiri Spelling Bee</p>
 
-<div class="card">
   <input id="studentName" placeholder="Nama siswa">
   <select id="level">
     <option value="">Pilih level</option>
@@ -83,14 +82,27 @@ button{
     <option value="2">Level 2</option>
     <option value="3">Level 3</option>
   </select>
-  <button onclick="startPractice()">START PRACTICE</button>
 
-  <div id="timer"></div>
+  <button onclick="startPractice()">START PRACTICE</button>
+</div>
+
+<!-- ===== SCREEN 2 : PRACTICE ===== -->
+<div id="practiceScreen" class="card" style="display:none">
+  <div id="practiceTitle">Practice Mode</div>
+  <p id="questionInfo"></p>
+
+  <div id="timer">⏱️ 20</div>
+
+  <input id="answerInput" placeholder="Ketik jawaban di sini">
+  <button onclick="submitAnswer()">SUBMIT</button>
+
   <div id="status"></div>
 </div>
 
 <script src="js/practice.js"></script>
 </body>
+
 </html>
+
 
 
