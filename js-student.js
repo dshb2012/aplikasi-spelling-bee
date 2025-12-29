@@ -22,15 +22,52 @@ function startStudent(){
 }
 
 function nextQuestion(){
+function wait(ms){
+  return new Promise(r=>setTimeout(r,ms));
+}
+
+async function nextQuestion(){
   if(index >= questions.length){
     finishSession();
     return;
   }
 
   const q = questions[index];
-  speak(q.word);
+
+  // 1️⃣ WORD
+  await speak(q.word);
+
+  // ⏸ jeda 0.4 detik
+  await wait(400);
+
+  // 2️⃣ SENTENCE
+  await speak(q.sentence);
+
+  // ⏸ jeda 0.4 detik
+  await wait(400);
+
+  // 3️⃣ WORD (ULANG)
+  await speak(q.word);
+
+  // 4️⃣ BARU MULAI TIMER
+  startTimer(20, ()=>{});
 }
 
+  }
+
+  const q = questions[index];
+  speak(q.word);
+}
+function speak(text){
+  return new Promise(res=>{
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-US";
+    u.rate = 0.9;      // lebih jelas untuk anak
+    u.pitch = 1;
+    u.onend = res;
+    speechSynthesis.speak(u);
+  });
+}
 function submitAnswer(){
   const input = document.getElementById("answer");
   const user = input.value.trim().toLowerCase();
@@ -55,3 +92,4 @@ function finishSession(){
     <button onclick="exportResult()">📄 Export Nilai</button>
   `;
 }
+
