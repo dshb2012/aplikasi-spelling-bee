@@ -638,7 +638,14 @@ th:nth-child(4),td:nth-child(4){width:20%;}
 <script>
 let rows=[], current=0, playing=false, paused=false;
 let timerInterval=null;
-const audioCtx=new (window.AudioContext||webkitAudioContext)();
+let audioCtx = null;
+function initAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext||webkitAudioContext)();
+  }
+  speechSynthesis.cancel();
+  speechSynthesis.speak(new SpeechSynthesisUtterance(" "));
+}
 
 function clearTimer(){ if(timerInterval){clearInterval(timerInterval);timerInterval=null;} }
 async function wait(ms){
@@ -772,6 +779,7 @@ async function playRow(i){
   await timer20();
 }
 async function playAll(){
+  initAudio();
   stopAll();
   current=0; playing=true;
   for(;current<rows.length && playing;current++){
@@ -780,6 +788,7 @@ async function playAll(){
   }
 }
 async function playFromRow(){
+  initAudio();
   stopAll();
   current=Math.max(0,startRow.value-1);
   playing=true;
@@ -874,6 +883,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
