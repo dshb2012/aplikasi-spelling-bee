@@ -37,7 +37,7 @@ html,body{
 }
 
 /* ===== HEADER ===== */
-#appTitle{
+#appTitle{    /* ===== SPELLING BEE ===== */
   font-family:'Henny Penny', cursive;
   font-size:52px;
   color:var(--primary);
@@ -45,7 +45,7 @@ html,body{
   text-align:center;
 }
 
-#appTagline{
+#appTagline{    /* ===== DESKRIPSI DIBAWAH JUDUL BESAR ===== */
   margin-top:10px;
   font-size:14px;
   text-align:center;
@@ -55,7 +55,7 @@ html,body{
 }
 
 /* ===== MODE TITLE ===== */
-#modeTitle{
+#modeTitle{   /* ===== PILIH MODE BELAJAR ===== */
   margin-top:40px;
   margin-bottom:18px;
   font-size:18px;
@@ -81,7 +81,7 @@ html,body{
   box-shadow:0 6px 16px rgba(0,0,0,.08);
   cursor:pointer;
   transition:.25s ease;
-  text-align:left;
+  text-align:center;
 }
 
 .mode-card:hover{
@@ -105,7 +105,7 @@ html,body{
 
 /* VARIASI WARNA */
 .mode-card.practice{
-  background:#ffffff;
+  background:#f9f4d2;
 }
 
 .mode-card.guided{
@@ -143,7 +143,7 @@ html,body{
 
     <!-- PRACTICE MODE -->
     <button class="mode-card practice" onclick="goPractice()">
-      <h3>Practice Mode</h3>
+      <h3>PRACTICE MODE</h3>
       <p>
         Mode latihan mandiri untuk anak.<br>
         Soal dibacakan otomatis, anak mengetik jawaban dan mendapatkan nilai.
@@ -152,7 +152,7 @@ html,body{
 
     <!-- GUIDED MODE -->
     <button class="mode-card guided" onclick="goGuided()">
-      <h3>Guided Mode</h3>
+      <h3>GUIDED MODE</h3>
       <p>
         Mode pendampingan oleh guru atau orang tua.<br>
         Kata dibacakan, anak menjawab dengan menulis atau berbicara langsung.
@@ -179,3 +179,4 @@ function goGuided(){
 
 </body>
 </html>
+
