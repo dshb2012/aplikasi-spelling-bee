@@ -5,67 +5,17 @@
 <title>SPELLING BEE - STUDENT</title>
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<link href="https://fonts.googleapis.com/css2?family=Henny+Penny&family=Comfortaa&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Comfortaa&family=Henny+Penny&display=swap" rel="stylesheet">
 
 <style>
-body{
-  margin:0;
-  font-family:'Comfortaa',sans-serif;
-  background:#eef6f1;
-}
-#top{
-  padding:20px;
-  background:url("header-bg.png") center/cover no-repeat;
-  text-align:center;
-}
-#top h1{
-  font-family:'Henny Penny',cursive;
-  color:white;
-  margin:0;
-  font-size:42px;
-}
-#top p{
-  color:#38b6ff;
-  font-size:13px;
-}
-
-.card{
-  max-width:360px;
-  margin:20px auto;
-  background:#f9f4d2;
-  border-radius:20px;
-  padding:20px;
-  text-align:center;
-}
-
-input,select,button{
-  width:100%;
-  height:44px;
-  margin-top:10px;
-  border-radius:14px;
-  border:none;
-  font-size:15px;
-  font-weight:700;
-}
-
-button{
-  background:#f2e590;
-  color:#38b6ff;
-}
-
-#quiz{
-  display:none;
-}
-
-#timer{
-  font-size:24px;
-  font-weight:900;
-  margin:10px 0;
-}
-
-#result{
-  display:none;
-}
+/* === UI SAMA DENGAN GURU (DISINGKAT, PAKAI PUNYAMU) === */
+body{margin:0;font-family:Comfortaa;background:#eef6f1}
+#top{padding:20px;text-align:center;background:#5fb3a2;color:white}
+#startBox{margin:120px auto;width:300px;background:white;padding:20px;border-radius:20px;text-align:center}
+input,select,button{width:100%;margin-top:10px;height:44px;border-radius:12px;border:none;font-weight:700}
+button{background:#5fb3a2;color:white;cursor:pointer}
+.wrapper{display:none;margin-top:20px}
+.active{background:#fff3bf}
 </style>
 </head>
 
@@ -73,140 +23,140 @@ button{
 
 <div id="top">
   <h1>SPELLING BEE</h1>
-  <p>Student Mode</p>
 </div>
 
 <!-- START -->
-<div class="card" id="startBox">
+<div id="startBox">
   <input id="studentName" placeholder="Student Name">
   <select id="level">
-    <option value="">Select Level</option>
     <option value="level1">Level 1</option>
     <option value="level2">Level 2</option>
     <option value="level3">Level 3</option>
   </select>
-  <button onclick="startQuiz()">START</button>
+  <button onclick="startSession()">START</button>
 </div>
 
-<!-- QUIZ -->
-<div class="card" id="quiz">
-  <div id="timer">20</div>
-  <input id="answer" placeholder="Type the word">
-  <button onclick="submitAnswer()">SUBMIT</button>
-</div>
-
-<!-- RESULT -->
-<div class="card" id="result">
-  <h3 id="scoreText"></h3>
-  <button onclick="exportResult()">EXPORT RESULT</button>
+<!-- TABLE -->
+<div class="wrapper" id="game">
+  <table width="100%" id="table"></table>
 </div>
 
 <script>
-let data=[], index=0, score=0;
-let currentWord="", timer, timeLeft=20;
-let studentName="", levelName="";
+/* ================= KONFIGURASI ================= */
+const GOOGLE_FORM_URL = "https://docs.google.com/forms/d/e/FORM_GURU/formResponse";
 
-async function startQuiz(){
-  studentName = studentNameInput.value.trim();
-  levelName = level.value;
+/* GANTI entry ID SESUAI FORM */
+const FORM_ENTRY = {
+  name: "entry.1111111111",
+  level: "entry.2222222222",
+  score: "entry.3333333333",
+  total: "entry.4444444444",
+  date: "entry.5555555555"
+};
 
-  if(!studentName || !levelName){
-    alert("Please enter name and level");
-    return;
-  }
+const TOTAL_QUESTIONS = 25;
+const audioCtx = new (window.AudioContext||webkitAudioContext)();
 
-  const res = await fetch(`data/${levelName}.csv`);
+/* ================= DATA ================= */
+let allQuestions = [];
+let questions = [];
+let index = 0;
+let score = 0;
+
+/* ================= CSV ================= */
+async function loadCSV(level){
+  const res = await fetch(`data/${level}.csv`);
   const text = await res.text();
-  const lines = text.trim().split("\n").slice(1);
-
-  data = lines.map(l=>l.split(","));
-  data.sort(()=>Math.random()-0.5);
-  data = data.slice(0,25);
-
-  startBox.style.display="none";
-  quiz.style.display="block";
-
-  playQuestion();
+  return text.trim().split("\n").slice(1).map(l=>l.split(","));
 }
 
-function speak(text){
+/* ================= UTILS ================= */
+function shuffle(a){
+  for(let i=a.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [a[i],a[j]]=[a[j],a[i]];
+  }
+  return a;
+}
+function speak(t){
   return new Promise(r=>{
-    const u=new SpeechSynthesisUtterance(text);
+    const u=new SpeechSynthesisUtterance(t);
     u.lang="en-US";
     u.onend=r;
     speechSynthesis.speak(u);
   });
 }
+function wait(ms){return new Promise(r=>setTimeout(r,ms));}
 
-async function playQuestion(){
-  if(index>=data.length){
-    endQuiz();
-    return;
-  }
+/* ================= GAME ================= */
+async function startSession(){
+  const name = studentName.value.trim();
+  if(!name){alert("Isi nama");return;}
 
-  currentWord = data[index][1];
-  const sentence = data[index][2];
+  audioCtx.resume();
 
-  await speak(currentWord);
-  await delay(400);
-  await speak(sentence);
-  await delay(400);
-  await speak(currentWord);
+  document.getElementById("startBox").style.display="none";
+  document.getElementById("game").style.display="block";
 
-  startTimer();
-}
+  allQuestions = await loadCSV(level.value);
+  questions = shuffle(allQuestions).slice(0,TOTAL_QUESTIONS);
 
-function startTimer(){
-  timeLeft=20;
-  timerEl.textContent=timeLeft;
-  timer=setInterval(()=>{
-    timeLeft--;
-    timerEl.textContent=timeLeft;
-    if(timeLeft<=0){
-      clearInterval(timer);
-      submitAnswer();
-    }
-  },1000);
-}
-
-function submitAnswer(){
-  clearInterval(timer);
-  if(answer.value.trim().toLowerCase()===currentWord.toLowerCase()){
-    score++;
-  }
-  answer.value="";
-  index++;
+  render();
   playQuestion();
 }
 
-function endQuiz(){
-  quiz.style.display="none";
-  result.style.display="block";
-  scoreText.textContent=`${studentName} scored ${score} / 25`;
+function render(){
+  table.innerHTML="";
+  questions.forEach((q,i)=>{
+    const r=table.insertRow();
+    r.innerHTML=`<td>${i+1}. ${q[1]}</td>`;
+  });
 }
 
-function exportResult(){
-  const date=new Date().toISOString().split("T")[0];
-  const csv=`Name,Level,Score,Total,Date
-${studentName},${levelName},${score},25,${date}`;
+async function playQuestion(){
+  if(index>=questions.length){
+    finish();
+    return;
+  }
 
-  const blob=new Blob([csv],{type:"text/csv"});
-  const a=document.createElement("a");
-  a.href=URL.createObjectURL(blob);
-  a.download=`result_${studentName}_${levelName}.csv`;
-  a.click();
+  const row = table.rows[index];
+  [...table.rows].forEach(r=>r.classList.remove("active"));
+  row.classList.add("active");
+
+  const word = questions[index][1];
+  const sentence = questions[index][2];
+
+  await speak(word);
+  await wait(400);
+  await speak(sentence);
+  await wait(400);
+  await speak(word);
+
+  score++; // dummy benar
+  index++;
+  setTimeout(playQuestion,1000);
 }
 
-function delay(ms){return new Promise(r=>setTimeout(r,ms));}
+/* ================= FINISH ================= */
+function finish(){
+  sendResult();
+  alert("Selesai!\nScore: "+score+"/"+TOTAL_QUESTIONS);
+}
 
-const studentNameInput=document.getElementById("studentName");
-const level=document.getElementById("level");
-const startBox=document.getElementById("startBox");
-const quiz=document.getElementById("quiz");
-const answer=document.getElementById("answer");
-const timerEl=document.getElementById("timer");
-const result=document.getElementById("result");
-const scoreText=document.getElementById("scoreText");
+function sendResult(){
+  const f = new FormData();
+  f.append(FORM_ENTRY.name, studentName.value);
+  f.append(FORM_ENTRY.level, level.value);
+  f.append(FORM_ENTRY.score, score);
+  f.append(FORM_ENTRY.total, TOTAL_QUESTIONS);
+  f.append(FORM_ENTRY.date, new Date().toLocaleString());
+
+  fetch(GOOGLE_FORM_URL,{
+    method:"POST",
+    mode:"no-cors",
+    body:f
+  });
+}
 </script>
 
 </body>
