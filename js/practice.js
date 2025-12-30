@@ -22,6 +22,7 @@ const studentName = document.getElementById("studentName");
 const levelSelect = document.getElementById("level");
 
 const answerInput = document.getElementById("answerInput");
+const submitBtn = document.getElementById("submitBtn");
 const timerEl = document.getElementById("timer");
 const statusEl = document.getElementById("status");
 const reviewList = document.getElementById("reviewList");
@@ -172,33 +173,56 @@ function stopTimer(){
 
 /* ===== PLAY QUESTION ===== */
 async function playQuestion(){
-  document.getElementById("questionInfo").textContent =
-  `Soal ${currentIndex + 1} dari ${session.length}`;
-  isQuestionActive = true;
+  if(isFinished) return;
+
+  // 🔒 MODE DENGAR
+  isReading = true;
+  isAnswering = false;
+  submitBtn.disabled = true;   // ⛔ TIDAK BISA SUBMIT
+  submitBtn.style.opacity = 0.5;
+
+  // 🔁 RESET TIMER SEBELUM SOAL BARU
+  stopTimer();
+  timeLeft = 20;
+  timerEl.textContent = `⏱️ ${timeLeft}`;
+
   currentQuestion = session[currentIndex];
+
+  questionInfo.textContent =
+    `Soal ${currentIndex + 1} dari ${session.length}`;
 
   answerInput.value = "";
   answerInput.focus();
 
+  // 🔊 PEMBACAAN
   await speak(currentQuestion.word);
   await wait(400);
   await speak(currentQuestion.sentence);
   await wait(400);
   await speak(currentQuestion.word);
 
-  startTimer();
+  // ✅ MODE JAWAB
+  isReading = false;
+  isAnswering = true;
+  submitBtn.disabled = false;   // ✅ BISA SUBMIT
+  submitBtn.style.opacity = 1;
+
+  startTimer(); // ⏱️ TIMER BARU JALAN SEKARANG
 }
+
 
 /* ===== SUBMIT ===== */
 function submitAnswer(){
-  if(!isQuestionActive) return;
-  isQuestionActive = false;
+  if(!isAnswering) return;
 
+  // ⛔ STOP SEMUA
+  isAnswering = false;
+  submitBtn.disabled = true;
+  submitBtn.style.opacity = 0.5;
   stopTimer();
 
   const userAns = answerInput.value.trim().toLowerCase();
-  const correctAns = currentQuestion.word.toLowerCase();
-  const correct = userAns === correctAns;
+  const correct = userAns === currentQuestion.word.toLowerCase();
 
   if(correct) score++;
 
@@ -211,8 +235,12 @@ function submitAnswer(){
   nextQuestion();
 }
 
-function handleTimeOut(){
-  isQuestionActive = false;
+function handleTimeout(){
+  if(!isAnswering) return;
+
+  isAnswering = false;
+  submitBtn.disabled = true;
+  submitBtn.style.opacity = 0.5;
 
   answers.push({
     word: currentQuestion.word,
@@ -222,6 +250,7 @@ function handleTimeOut(){
 
   nextQuestion();
 }
+
 
 function nextQuestion(){
   currentIndex++;
