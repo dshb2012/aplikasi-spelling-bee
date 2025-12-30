@@ -5,10 +5,10 @@
 /* ===== STATE ===== */
 let questions = [];
 let session = [];
-let current = 0;
+let currentIndex = 0;
 let score = 0;
 let answers = [];
-let paused = false;
+let isQuestionActive = false;
 let timerInterval = null;
 let audioCtx = null;
 let currentQuestion = null;
@@ -105,25 +105,34 @@ function timer20(){
   });
 }
 function startTimer(){
-  stopTimer(); // pastikan tidak double
+  clearInterval(timerInterval);
 
-  timeLeft = 20;
-  timerEl.textContent = timeLeft;
+  let timeLeft = 20;
+  timerEl.textContent = `⏱️ ${timeLeft}`;
 
   timerInterval = setInterval(()=>{
     timeLeft--;
-    timerEl.textContent = timeLeft;
-
-    if(timeLeft <= 5 && timeLeft > 0){
-      tickSound();
-    }
+    timerEl.textContent = `⏱️ ${timeLeft}`;
+    tickSound();
 
     if(timeLeft <= 0){
-      stopTimer();
-      handleTimeOut(); // ⬅️ waktu habis
+      clearInterval(timerInterval);
+      handleTimeOut();
     }
-  }, 1000);
+  },1000);
 }
+function handleTimeOut(){
+  isQuestionActive = false;
+
+  answers.push({
+    word: currentQuestion.word,
+    userAnswer: "",
+    correct: false
+  });
+
+  goToNextQuestion();
+}
+
 function stopTimer(){
   if(timerInterval){
     clearInterval(timerInterval);
@@ -163,6 +172,7 @@ async function loadQuestions(){
 /* ===== START PRACTICE ===== */
 async function startPractice(){
   unlockAudio();
+
   const name = studentName.value.trim();
   const level = levelSelect.value;
 
@@ -171,27 +181,26 @@ async function startPractice(){
     return;
   }
 
-  initAudio();
   await loadQuestions();
 
   session = questions
     .filter(q => q.level === level)
-    .sort(()=>Math.random() - 0.5)
+    .sort(() => Math.random() - 0.5)
     .slice(0,25);
 
   if(session.length === 0){
-    alert("Soal untuk level ini belum tersedia");
+    alert("Soal belum tersedia");
     return;
   }
 
-  current = 0;
+  currentIndex = 0;
   score = 0;
   answers = [];
 
   startScreen.style.display = "none";
   practiceScreen.style.display = "block";
 
-  await readyCountdown();   // <<< TAMBAHAN
+  await readyCountdown();
   playQuestion();
 }
 
@@ -214,19 +223,17 @@ async function readyCountdown(){
 async function playQuestion(){
   isQuestionActive = true;
 
-  const q = session[currentIndex];
-  currentQuestion = q;
+  currentQuestion = session[currentIndex];
 
   answerInput.value = "";
   answerInput.focus();
 
-  await speak(q.word);
+  await speak(currentQuestion.word);
   await wait(400);
-  await speak(q.sentence);
+  await speak(currentQuestion.sentence);
   await wait(400);
-  await speak(q.word);
+  await speak(currentQuestion.word);
 
-  // 🔔 selesai membaca → baru timer
   startTimer();
 }
 
@@ -272,21 +279,11 @@ answerInput.addEventListener("keydown", e=>{
     submitAnswer();
   }
 });
-answers = [
-  {
-    word: "apple",
-    userAnswer: "aple",
-    correct: false
-  },
-  {
-    word: "banana",
-    userAnswer: "banana",
-    correct: true
-  }
-]
 
 /* ===== FINISH ===== */
 function finishPractice(){
+  practiceScreen.style.display = "none";
+  reviewSection.style.display = "block";
   statusEl.innerHTML = `
     🎉 Latihan selesai!<br>
     Skor kamu <b>${score}</b> dari <b>${session.length}</b>
