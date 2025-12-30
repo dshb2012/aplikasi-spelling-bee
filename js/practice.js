@@ -102,7 +102,12 @@ async function loadQuestions(){
 
 /* ===== START PRACTICE ===== */
 async function startPractice(){
+  // 🔥 INI EVENT CLICK → AMAN UNTUK HP
   unlockAudio();
+
+  // 🔊 SPEECH DUMMY WAJIB
+  const u = new SpeechSynthesisUtterance("Ready");
+  speechSynthesis.speak(u);
 
   const name = studentName.value.trim();
   const level = levelSelect.value;
@@ -119,22 +124,17 @@ async function startPractice(){
     .sort(() => Math.random() - 0.5)
     .slice(0, 25);
 
-  if(session.length === 0){
-    alert("Soal belum tersedia");
-    return;
-  }
-
-  currentIndex = 0;
-  score = 0;
-  answers = [];
-
   startScreen.style.display = "none";
   practiceScreen.style.display = "block";
   reviewSection.classList.add("hidden");
 
+  // ⏳ countdown boleh, tapi JANGAN SPEAK DI SINI
   await readyCountdown();
+
+  // ⬇️ soal baru boleh speak
   playQuestion();
 }
+
 
 /* ===== COUNTDOWN ===== */
 async function readyCountdown(){
@@ -174,46 +174,61 @@ function stopTimer(){
 
 
 /* ===== PLAY QUESTION ===== */
-async function playQuestion(){
-  if(isFinished) return;
+function playQuestion(){
+  // pastikan tidak keluar batas
+  if(currentIndex >= session.length) return;
 
-  // 🔥 PAKSA RESET SUARA (WAJIB)
+  // paksa stop suara sebelumnya
   speechSynthesis.cancel();
 
+  // kunci interaksi
   isReading = true;
   isAnswering = false;
-
   submitBtn.disabled = true;
   submitBtn.style.opacity = 0.5;
 
+  // reset timer visual
   stopTimer();
   timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
 
+  // set soal
   currentQuestion = session[currentIndex];
-
   questionInfo.textContent =
     `Soal ${currentIndex + 1} dari ${session.length}`;
 
   answerInput.value = "";
   answerInput.focus();
 
-  // 🔊 BACA SOAL
-  await speak(currentQuestion.word);
-  await wait(400);
-  await speak(currentQuestion.sentence);
-  await wait(400);
-  await speak(currentQuestion.word);
+  // === RANGKAI SPEECH TANPA DELAY MANUAL ===
+  const u1 = new SpeechSynthesisUtterance(currentQuestion.word);
+  const u2 = new SpeechSynthesisUtterance(currentQuestion.sentence);
+  const u3 = new SpeechSynthesisUtterance(currentQuestion.word);
 
-  // ✅ BOLEH JAWAB
-  isReading = false;
-  isAnswering = true;
+  [u1, u2, u3].forEach(u => {
+    u.lang = "en-US";
+    u.rate = 0.9;
+  });
 
-  submitBtn.disabled = false;
-  submitBtn.style.opacity = 1;
+  // chaining aman
+  u1.onend = () => speechSynthesis.speak(u2);
+  u2.onend = () => speechSynthesis.speak(u3);
 
-  startTimer();
+  // setelah semua selesai → baru boleh jawab & timer jalan
+  u3.onend = () => {
+    isReading = false;
+    isAnswering = true;
+
+    submitBtn.disabled = false;
+    submitBtn.style.opacity = 1;
+
+    startTimer();
+  };
+
+  // mulai bicara
+  speechSynthesis.speak(u1);
 }
+
 
 
 function handleTimeout(){
