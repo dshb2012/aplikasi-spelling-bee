@@ -2,6 +2,9 @@
  * PRACTICE MODE - FINAL *
  *************************/
 /* ===== STATE ===== */
+let isReading = false;
+let isAnswering = false;
+let isFinished = false;
 let questions = [];
 let session = [];
 let currentIndex = 0;
@@ -17,11 +20,10 @@ let isQuestionActive = false;
 const startScreen = document.getElementById("startScreen");
 const practiceScreen = document.getElementById("practiceScreen");
 const reviewSection = document.getElementById("reviewSection");
-
 const studentName = document.getElementById("studentName");
 const levelSelect = document.getElementById("level");
-
 const answerInput = document.getElementById("answerInput");
+const questionInfo = document.getElementById("questionInfo");
 const submitBtn = document.getElementById("submitBtn");
 const timerEl = document.getElementById("timer");
 const statusEl = document.getElementById("status");
@@ -175,16 +177,15 @@ function stopTimer(){
 async function playQuestion(){
   if(isFinished) return;
 
-  // 🛑 PAKSA BERSIHKAN SUARA SEBELUM BACA SOAL BARU
+  // 🔥 PAKSA RESET SUARA (WAJIB)
   speechSynthesis.cancel();
 
-  // 🔒 MODE DENGAR
   isReading = true;
   isAnswering = false;
+
   submitBtn.disabled = true;
   submitBtn.style.opacity = 0.5;
 
-  // 🔁 RESET TIMER
   stopTimer();
   timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
@@ -197,45 +198,23 @@ async function playQuestion(){
   answerInput.value = "";
   answerInput.focus();
 
-  // 🔊 PEMBACAAN SOAL
+  // 🔊 BACA SOAL
   await speak(currentQuestion.word);
   await wait(400);
   await speak(currentQuestion.sentence);
   await wait(400);
   await speak(currentQuestion.word);
 
-  // ✅ MODE JAWAB
+  // ✅ BOLEH JAWAB
   isReading = false;
   isAnswering = true;
+
   submitBtn.disabled = false;
   submitBtn.style.opacity = 1;
 
   startTimer();
 }
 
-/* ===== SUBMIT ===== */
-function submitAnswer(){
-  if(!isAnswering) return;
-
-  // ⛔ STOP SEMUA
-  isAnswering = false;
-  submitBtn.disabled = true;
-  submitBtn.style.opacity = 0.5;
-  stopTimer();
-
-  const userAns = answerInput.value.trim().toLowerCase();
-  const correct = userAns === currentQuestion.word.toLowerCase();
-
-  if(correct) score++;
-
-  answers.push({
-    word: currentQuestion.word,
-    userAnswer: userAns,
-    correct
-  });
-
-  nextQuestion();
-}
 
 function handleTimeout(){
   if(!isAnswering) return;
