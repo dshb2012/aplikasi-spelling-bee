@@ -147,7 +147,7 @@ async function readyCountdown(){
 
 /* ===== TIMER ===== */
 function startTimer(){
-  clearInterval(timerInterval);
+  stopTimer(); // ⬅️ pastikan tidak ada timer sisa
 
   let timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
@@ -158,18 +158,23 @@ function startTimer(){
     tickSound();
 
     if(timeLeft <= 0){
-      clearInterval(timerInterval);
+      stopTimer();
       handleTimeOut();
     }
   },1000);
 }
-
 function stopTimer(){
-  clearInterval(timerInterval);
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
 }
+
 
 /* ===== PLAY QUESTION ===== */
 async function playQuestion(){
+  document.getElementById("questionInfo").textContent =
+  `Soal ${currentIndex + 1} dari ${session.length}`;
   isQuestionActive = true;
   currentQuestion = session[currentIndex];
 
