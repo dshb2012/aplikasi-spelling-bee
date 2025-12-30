@@ -1,7 +1,6 @@
 /*************************
  * PRACTICE MODE - FINAL *
  *************************/
-reviewSection.classList.add("hidden");
 /* ===== STATE ===== */
 let questions = [];
 let session = [];
