@@ -272,6 +272,18 @@ answerInput.addEventListener("keydown", e=>{
     submitAnswer();
   }
 });
+answers = [
+  {
+    word: "apple",
+    userAnswer: "aple",
+    correct: false
+  },
+  {
+    word: "banana",
+    userAnswer: "banana",
+    correct: true
+  }
+]
 
 /* ===== FINISH ===== */
 function finishPractice(){
