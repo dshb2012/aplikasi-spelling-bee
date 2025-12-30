@@ -236,11 +236,17 @@ function nextQuestion(){
 
 /* ===== FINISH ===== */
 function finishPractice(){
+  stopTimer();
+
   practiceScreen.style.display = "none";
   reviewSection.classList.remove("hidden");
 
+  // ✅ TAMPILKAN NILAI
+  document.getElementById("reviewScore").textContent =
+    `Nilai kamu: ${score} / ${session.length}`;
+
   renderReview();
-  }
+}
 
 /* ===== REVIEW ===== */
 function renderReview(){
