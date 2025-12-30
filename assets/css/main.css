@@ -83,3 +83,31 @@ body{
 .hidden{
   display:none;
 }
+.hidden { display: none; }
+
+#reviewList {
+  margin-top: 16px;
+}
+
+.review-item {
+  background: #f9f9f9;
+  border-radius: 10px;
+  padding: 10px;
+  margin-bottom: 8px;
+  font-size: 14px;
+}
+
+.review-item.correct {
+  border-left: 6px solid #4CAF50;
+}
+
+.review-item.wrong {
+  border-left: 6px solid #F44336;
+}
+
+.review-actions {
+  display: flex;
+  gap: 10px;
+  margin-top: 20px;
+}
+
