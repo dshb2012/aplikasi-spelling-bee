@@ -101,9 +101,32 @@ button{
 </div>
 
 <script src="js/practice.js"></script>
-</body>
+  
+<!-- 3. HALAMAN REVIEW JAWABAN -->
+  <section id="reviewSection" class="hidden">
+    <h2>📋 Review Jawaban</h2>
 
+    <p class="review-desc">
+      Periksa jawaban kamu di bawah ini.  
+      Kamu bisa melihat hasilnya atau mengunduh laporan latihan.
+    </p>
+
+    <div id="reviewList"></div>
+
+    <div class="review-actions">
+      <button class="btn btn-secondary" onclick="restartPractice()">
+        🔁 Latihan Ulang
+      </button>
+
+      <button class="btn btn-primary" onclick="exportPDF()">
+        📄 Unduh Hasil (PDF)
+      </button>
+    </div>
+  </section>
+
+</body>
 </html>
+
 
 
 
