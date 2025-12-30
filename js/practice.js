@@ -101,10 +101,22 @@ async function loadQuestions(){
 }
 
 /* ===== START PRACTICE ===== */
-async function startPractice(){
-  // 🔥 INI EVENT CLICK → AMAN UNTUK HP
+function startPracticeWithAudio(){
+  // 🔓 WAJIB: user gesture langsung
   unlockAudio();
 
+  // 🔊 trigger speech pertama (dummy)
+  const u = new SpeechSynthesisUtterance("Start");
+  u.lang = "en-US";
+
+  u.onend = () => {
+    startPractice(); // lanjut normal
+  };
+
+  speechSynthesis.cancel();
+  speechSynthesis.speak(u);
+}
+async function startPractice(){
   // 🔊 SPEECH DUMMY WAJIB
   const u = new SpeechSynthesisUtterance("Ready");
   speechSynthesis.speak(u);
