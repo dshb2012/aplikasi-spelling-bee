@@ -8,6 +8,7 @@ let currentIndex = 0;
 let score = 0;
 let answers = [];
 let timerInterval = null;
+let timeLeft = 20;
 let audioCtx = null;
 let currentQuestion = null;
 let isQuestionActive = false;
@@ -146,19 +147,18 @@ async function readyCountdown(){
 
 /* ===== TIMER ===== */
 function startTimer(){
-  stopTimer(); // ⬅️ pastikan tidak ada timer sisa
-
-  let timeLeft = 20;
+  stopTimer();
+  timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
 
   timerInterval = setInterval(()=>{
     timeLeft--;
     timerEl.textContent = `⏱️ ${timeLeft}`;
-    tickSound();
+    if(timeLeft > 0) tickSound();
 
     if(timeLeft <= 0){
       stopTimer();
-      handleTimeOut();
+      handleTimeout();
     }
   },1000);
 }
