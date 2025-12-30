@@ -297,7 +297,30 @@ function finishPractice(){
 
   exportResultPDF();
 }
+ stopTimer();
 
+  document.getElementById("practiceSection").classList.add("hidden");
+  document.getElementById("reviewSection").classList.remove("hidden");
+
+  renderReview();
+}
+function renderReview(){
+  const list = document.getElementById("reviewList");
+  list.innerHTML = "";
+
+  answers.forEach((a, i)=>{
+    const div = document.createElement("div");
+    div.className = `review-item ${a.correct ? "correct" : "wrong"}`;
+
+    div.innerHTML = `
+      <strong>${i+1}. ${a.word}</strong><br>
+      Jawaban kamu: <em>${a.userAnswer || "(kosong)"}</em><br>
+      Status: ${a.correct ? "✔ Benar" : "✖ Salah"}
+    `;
+
+    list.appendChild(div);
+  });
+}
 
 /* ===== EXPORT PDF ===== */
 function exportResultPDF(){
