@@ -104,6 +104,40 @@ function timer20(){
     },1000);
   });
 }
+function startTimer(){
+  stopTimer(); // pastikan tidak double
+
+  timeLeft = 20;
+  timerEl.textContent = timeLeft;
+
+  timerInterval = setInterval(()=>{
+    timeLeft--;
+    timerEl.textContent = timeLeft;
+
+    if(timeLeft <= 5 && timeLeft > 0){
+      tickSound();
+    }
+
+    if(timeLeft <= 0){
+      stopTimer();
+      handleTimeOut(); // ⬅️ waktu habis
+    }
+  }, 1000);
+}
+function stopTimer(){
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  stopTickSound();
+}
+function stopTimer(){
+  if(timerInterval){
+    clearInterval(timerInterval);
+    timerInterval = null;
+  }
+  stopTickSound();
+}
 
 /* ===== UTILS ===== */
 function wait(ms){
@@ -178,48 +212,66 @@ async function readyCountdown(){
 
 /* ===== PLAY QUESTION ===== */
 async function playQuestion(){
-  if(current >= session.length){
-    finishPractice();
-    return;
-  }
+  isQuestionActive = true;
 
-  currentQuestion = session[current];
+  const q = session[currentIndex];
+  currentQuestion = q;
+
   answerInput.value = "";
   answerInput.focus();
 
-  questionInfo.textContent =
-    `Soal ${current+1} dari ${session.length}`;
-
-  await speak(currentQuestion.word);
+  await speak(q.word);
   await wait(400);
-  await speak(currentQuestion.sentence);
+  await speak(q.sentence);
   await wait(400);
-  await speak(currentQuestion.word);
+  await speak(q.word);
 
-  await timer20();
+  // 🔔 selesai membaca → baru timer
+  startTimer();
 }
 
 /* ===== SUBMIT ===== */
 function submitAnswer(){
-  if(!currentQuestion) return;
+  if(!isQuestionActive) return;
 
-  const userAnswer = answerInput.value.trim();
-  const correct =
-    userAnswer.toLowerCase() ===
-    currentQuestion.word.toLowerCase();
+  isQuestionActive = false;
 
-  if(correct) score++;
+  stopTimer(); // ⛔ STOP TIMER + SUARA
+
+  const userAns = answerInput.value.trim().toLowerCase();
+  const correctAns = currentQuestion.word.toLowerCase();
+
+  const isCorrect = userAns === correctAns;
+  if(isCorrect) score++;
 
   answers.push({
-    name: studentName.value,
     word: currentQuestion.word,
-    userAnswer,
-    correct
+    userAnswer: userAns,
+    correct: isCorrect
   });
 
-  current++;
-  playQuestion();
+  goToNextQuestion();
 }
+function goToNextQuestion(){
+  stopTimer();
+  currentIndex++;
+
+  if(currentIndex >= session.length){
+    finishPractice();
+    return;
+  }
+
+  setTimeout(()=>{
+    playQuestion();
+  }, 500);
+}
+submitBtn.addEventListener("click", submitAnswer);
+
+answerInput.addEventListener("keydown", e=>{
+  if(e.key === "Enter"){
+    submitAnswer();
+  }
+});
 
 /* ===== FINISH ===== */
 function finishPractice(){
@@ -235,7 +287,7 @@ function finishPractice(){
 }
 
 
-/* ===== EXPORT CSV ===== */
+/* ===== EXPORT PDF ===== */
 function exportResultPDF(){
   const { jsPDF } = window.jspdf;
   const pdf = new jsPDF();
