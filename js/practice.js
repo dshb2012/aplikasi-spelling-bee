@@ -223,26 +223,53 @@ function submitAnswer(){
 
 /* ===== FINISH ===== */
 function finishPractice(){
-  statusEl.innerHTML =
-    `🎉 Selesai!<br>Skor: ${score} / ${session.length}`;
+  statusEl.innerHTML = `
+    🎉 Latihan selesai!<br>
+    Skor kamu <b>${score}</b> dari <b>${session.length}</b>
+    <br><br>
+    📄 Hasil latihan sudah otomatis diunduh.<br>
+    Silakan cek file PDF untuk melihat jawaban dan hasil latihanmu 😊
+  `;
 
-  exportResult();
+  exportResultPDF();
 }
+
 
 /* ===== EXPORT CSV ===== */
-function exportResult(){
-  let csv = "nama,jawaban_siswa,jawaban_benar,skor\n";
+function exportResultPDF(){
+  const { jsPDF } = window.jspdf;
+  const pdf = new jsPDF();
 
-  answers.forEach(a=>{
-    csv += `${a.name},${a.userAnswer},${a.word},${a.correct?1:0}\n`;
+  let y = 20;
+  pdf.setFontSize(16);
+  pdf.text("HASIL LATIHAN SPELLING BEE", 20, y);
+
+  y += 10;
+  pdf.setFontSize(12);
+  pdf.text(`Nama: ${studentName.value}`, 20, y);
+
+  y += 8;
+  pdf.text(`Skor: ${score} / ${session.length}`, 20, y);
+
+  y += 12;
+  pdf.setFontSize(11);
+
+  answers.forEach((a, i)=>{
+    if(y > 270){
+      pdf.addPage();
+      y = 20;
+    }
+    pdf.text(
+      `${i+1}. Jawaban: ${a.userAnswer || "-"} | Benar: ${a.word}`,
+      20,
+      y
+    );
+    y += 8;
   });
 
-  const blob = new Blob([csv], {type:"text/csv"});
-  const a = document.createElement("a");
-  a.href = URL.createObjectURL(blob);
-  a.download = "practice_result.csv";
-  a.click();
+  pdf.save("hasil-latihan-spelling-bee.pdf");
 }
+
 
 /* ===== ENTER KEY ===== */
 answerInput?.addEventListener("keydown", e=>{
