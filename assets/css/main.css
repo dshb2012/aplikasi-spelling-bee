@@ -83,7 +83,6 @@ body{
 .hidden{
   display:none!important;
 }
-.hidden { display: none; }
 
 #reviewList {
   margin-top: 16px;
