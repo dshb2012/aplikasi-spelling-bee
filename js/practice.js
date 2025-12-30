@@ -175,13 +175,16 @@ function stopTimer(){
 async function playQuestion(){
   if(isFinished) return;
 
+  // 🛑 PAKSA BERSIHKAN SUARA SEBELUM BACA SOAL BARU
+  speechSynthesis.cancel();
+
   // 🔒 MODE DENGAR
   isReading = true;
   isAnswering = false;
-  submitBtn.disabled = true;   // ⛔ TIDAK BISA SUBMIT
+  submitBtn.disabled = true;
   submitBtn.style.opacity = 0.5;
 
-  // 🔁 RESET TIMER SEBELUM SOAL BARU
+  // 🔁 RESET TIMER
   stopTimer();
   timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
@@ -194,7 +197,7 @@ async function playQuestion(){
   answerInput.value = "";
   answerInput.focus();
 
-  // 🔊 PEMBACAAN
+  // 🔊 PEMBACAAN SOAL
   await speak(currentQuestion.word);
   await wait(400);
   await speak(currentQuestion.sentence);
@@ -204,12 +207,11 @@ async function playQuestion(){
   // ✅ MODE JAWAB
   isReading = false;
   isAnswering = true;
-  submitBtn.disabled = false;   // ✅ BISA SUBMIT
+  submitBtn.disabled = false;
   submitBtn.style.opacity = 1;
 
-  startTimer(); // ⏱️ TIMER BARU JALAN SEKARANG
+  startTimer();
 }
-
 
 /* ===== SUBMIT ===== */
 function submitAnswer(){
