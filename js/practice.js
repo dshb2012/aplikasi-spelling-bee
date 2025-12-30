@@ -244,6 +244,32 @@ function nextQuestion(){
   setTimeout(playQuestion, 500);
 }
 
+/* ===== submit answer ===== */
+function submitAnswer(){
+  if(!isAnswering) return;
+
+  isAnswering = false;
+
+  stopTimer();               // ⛔ MATIKAN TIMER
+  submitBtn.disabled = true;
+  submitBtn.style.opacity = 0.5;
+
+  const userAns = answerInput.value.trim().toLowerCase();
+  const correctAns = currentQuestion.word.toLowerCase();
+  const correct = userAns === correctAns;
+
+  if(correct) score++;
+
+  answers.push({
+    word: currentQuestion.word,
+    userAnswer: userAns,
+    correct
+  });
+
+  nextQuestion(); // ➡️ LANGSUNG KE SOAL BERIKUTNYA
+}
+
+
 /* ===== FINISH ===== */
 function finishPractice(){
   stopTimer();
