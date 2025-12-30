@@ -39,6 +39,18 @@ function speak(text){
     speechSynthesis.speak(u);
   });
 }
+function unlockAudio(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === "suspended"){
+    audioCtx.resume();
+  }
+
+  // trigger dummy speech (wajib untuk iOS)
+  const u = new SpeechSynthesisUtterance(" ");
+  speechSynthesis.speak(u);
+}
 
 /* ===== TIMER SOUND ===== */
 function tickSound(){
@@ -116,6 +128,7 @@ async function loadQuestions(){
 
 /* ===== START PRACTICE ===== */
 async function startPractice(){
+  unlockAudio();
   const name = studentName.value.trim();
   const level = levelSelect.value;
 
@@ -144,7 +157,23 @@ async function startPractice(){
   startScreen.style.display = "none";
   practiceScreen.style.display = "block";
 
+  await readyCountdown();   // <<< TAMBAHAN
   playQuestion();
+}
+
+/*=====COUNTDOWN SEBELUM SOAL DIBACAKAN======*/
+async function readyCountdown(){
+  statusEl.textContent = "Siap ya... soal akan dimulai";
+
+  for(let i=3; i>0; i--){
+    statusEl.textContent = `Mulai dalam ${i}...`;
+    tickSound();
+    await wait(1000);
+  }
+
+  statusEl.textContent = "Soal dimulai!";
+  endBell();
+  await wait(500);
 }
 
 /* ===== PLAY QUESTION ===== */
