@@ -101,25 +101,8 @@ async function loadQuestions(){
 }
 
 /* ===== START PRACTICE ===== */
-function startPracticeWithAudio(){
-  // 🔓 WAJIB: user gesture langsung
-  unlockAudio();
-
-  // 🔊 trigger speech pertama (dummy)
-  const u = new SpeechSynthesisUtterance("Start");
-  u.lang = "en-US";
-
-  u.onend = () => {
-    startPractice(); // lanjut normal
-  };
-
-  speechSynthesis.cancel();
-  speechSynthesis.speak(u);
-}
-async function startPractice(){
-  // 🔊 SPEECH DUMMY WAJIB
-  const u = new SpeechSynthesisUtterance("Ready");
-  speechSynthesis.speak(u);
+function startPractice(){
+  unlockAudio(); // ✅ WAJIB
 
   const name = studentName.value.trim();
   const level = levelSelect.value;
@@ -129,22 +112,31 @@ async function startPractice(){
     return;
   }
 
-  await loadQuestions();
+  loadQuestions().then(() => {
 
-  session = questions
-    .filter(q => q.level === level)
-    .sort(() => Math.random() - 0.5)
-    .slice(0, 25);
+    session = questions
+      .filter(q => q.level === level)
+      .sort(() => Math.random() - 0.5)
+      .slice(0, 25);
 
-  startScreen.style.display = "none";
-  practiceScreen.style.display = "block";
-  reviewSection.classList.add("hidden");
+    if(session.length === 0){
+      alert("Soal belum tersedia");
+      return;
+    }
 
-  // ⏳ countdown boleh, tapi JANGAN SPEAK DI SINI
-  await readyCountdown();
+    currentIndex = 0;
+    score = 0;
+    answers = [];
 
-  // ⬇️ soal baru boleh speak
-  playQuestion();
+    startScreen.style.display = "none";
+    practiceScreen.style.display = "block";
+    reviewSection.classList.add("hidden");
+
+    readyCountdown().then(() => {
+      playQuestion(); // ⬅️ speech soal DI SINI
+    });
+
+  });
 }
 
 
