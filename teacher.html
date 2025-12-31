@@ -454,7 +454,7 @@ th:nth-child(4),td:nth-child(4){width:20%;}
 }
 
 #csvError{
-  margin:260px auto 0;
+  margin:200px auto 40px;
   max-width:320px;
   background:#ffe5e5;
   color:#7a0000;
@@ -712,11 +712,20 @@ function loadCSV(e){
     const lines=r.result.trim().split("\n").map(l=>l.split(","));
 
     // VALIDASI CSV
-    if(lines.length < 2 || lines[0].length < 3){
-      document.getElementById("csvError").style.display="block";
-      return;
-    }
+   if(lines.length < 2 || lines[0].length < 3){
 
+  // 1. SEMBUNYIKAN START MESSAGE
+  document.getElementById("startMessage").style.display = "none";
+
+  // 2. TAMPILKAN ERROR DI BAWAH
+  const err = document.getElementById("csvError");
+  err.style.display = "block";
+
+  // 3. SCROLL KE ERROR (PENTING DI HP)
+  err.scrollIntoView({ behavior: "smooth", block: "center" });
+
+  return;
+}
     document.getElementById("csvError").style.display="none";
     
     lines.shift();
@@ -876,6 +885,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
