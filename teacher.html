@@ -469,6 +469,9 @@ th:nth-child(4),td:nth-child(4){width:20%;}
   text-align:center;
   box-shadow:0 6px 14px rgba(0,0,0,.12);
   display:none;
+  position: relative;
+  z-index: 3000;      /* LEBIH TINGGI dari startMessage */
+  pointer-events: auto;
 }
 .retryUpload{
   display:inline-block;
@@ -570,11 +573,11 @@ th:nth-child(4),td:nth-child(4){width:20%;}
 </label>
 
 <div id="csvError" onclick="triggerUpload()">
-  ⚠️ File yang diunduh tidak sesuai format  
+  ⚠️ File tidak sesuai format  
   <br>
   <small>
-    Pastikan format file .CSV dan format kolom: No, Word, Sentence  
-    <br><b>Tap di sini untuk upload ulang</b>
+    Pastikan format file .CSV dan <br>format kolom: No, Word, Sentence  
+    <br><br><i><b>Tap di sini untuk upload ulang</i></b>
   </small>
 </div>
   
@@ -914,6 +917,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
