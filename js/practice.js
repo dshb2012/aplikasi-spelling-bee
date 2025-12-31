@@ -101,8 +101,8 @@ async function loadQuestions(){
 }
 
 /* ===== START PRACTICE ===== */
-function startPractice(){
-  unlockAudio(); // ✅ WAJIB
+async function startPractice(){
+  unlockAudio(); // izin audio (aman)
 
   const name = studentName.value.trim();
   const level = levelSelect.value;
@@ -112,33 +112,34 @@ function startPractice(){
     return;
   }
 
-  loadQuestions().then(() => {
+  await loadQuestions();
 
-    session = questions
-      .filter(q => q.level === level)
-      .sort(() => Math.random() - 0.5)
-      .slice(0, 25);
+  session = questions
+    .filter(q => q.level === level)
+    .sort(() => Math.random() - 0.5)
+    .slice(0, 25);
 
-    if(session.length === 0){
-      alert("Soal belum tersedia");
-      return;
-    }
+  if(session.length === 0){
+    alert("Soal belum tersedia");
+    return;
+  }
 
-    currentIndex = 0;
-    score = 0;
-    answers = [];
+  currentIndex = 0;
+  score = 0;
+  answers = [];
+  isFinished = false;
 
-    startScreen.style.display = "none";
-    practiceScreen.style.display = "block";
-    reviewSection.classList.add("hidden");
+  // 🔑 PINDAH LAYAR LANGSUNG (JANGAN TUNGGU AUDIO)
+  startScreen.style.display = "none";
+  practiceScreen.style.display = "block";
+  reviewSection.classList.add("hidden");
 
-    readyCountdown().then(() => {
-      playQuestion(); // ⬅️ speech soal DI SINI
-    });
+  // countdown TANPA speech
+  await readyCountdown();
 
-  });
+  // mulai soal
+  playQuestion();
 }
-
 
 /* ===== COUNTDOWN ===== */
 async function readyCountdown(){
@@ -179,47 +180,49 @@ function stopTimer(){
 
 /* ===== PLAY QUESTION ===== */
 function playQuestion(){
-  // pastikan tidak keluar batas
   if(currentIndex >= session.length) return;
 
-  // paksa stop suara sebelumnya
+  // hentikan semua suara sebelumnya
   speechSynthesis.cancel();
 
-  // kunci interaksi
   isReading = true;
   isAnswering = false;
+
   submitBtn.disabled = true;
   submitBtn.style.opacity = 0.5;
 
-  // reset timer visual
   stopTimer();
   timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
 
-  // set soal
   currentQuestion = session[currentIndex];
+
   questionInfo.textContent =
     `Soal ${currentIndex + 1} dari ${session.length}`;
 
   answerInput.value = "";
   answerInput.focus();
 
-  // === RANGKAI SPEECH TANPA DELAY MANUAL ===
-  const u1 = new SpeechSynthesisUtterance(currentQuestion.word);
-  const u2 = new SpeechSynthesisUtterance(currentQuestion.sentence);
-  const u3 = new SpeechSynthesisUtterance(currentQuestion.word);
+  // 🔊 AUDIO = TAMBAHAN, BUKAN KONTROL FLOW
+  try {
+    const u1 = new SpeechSynthesisUtterance(currentQuestion.word);
+    const u2 = new SpeechSynthesisUtterance(currentQuestion.sentence);
+    const u3 = new SpeechSynthesisUtterance(currentQuestion.word);
 
-  [u1, u2, u3].forEach(u => {
-    u.lang = "en-US";
-    u.rate = 0.9;
-  });
+    [u1,u2,u3].forEach(u=>{
+      u.lang = "en-US";
+      u.rate = 0.9;
+    });
 
-  // chaining aman
-  u1.onend = () => speechSynthesis.speak(u2);
-  u2.onend = () => speechSynthesis.speak(u3);
+    speechSynthesis.speak(u1);
+    speechSynthesis.speak(u2);
+    speechSynthesis.speak(u3);
+  } catch(e){
+    console.log("Speech gagal, lanjut tanpa suara");
+  }
 
-  // setelah semua selesai → baru boleh jawab & timer jalan
-  u3.onend = () => {
+  // ⏱️ FLOW SOAL TIDAK NUNGGU AUDIO
+  setTimeout(()=>{
     isReading = false;
     isAnswering = true;
 
@@ -227,13 +230,8 @@ function playQuestion(){
     submitBtn.style.opacity = 1;
 
     startTimer();
-  };
-
-  // mulai bicara
-  speechSynthesis.speak(u1);
+  }, 2000); // estimasi waktu baca
 }
-
-
 
 function handleTimeout(){
   if(!isAnswering) return;
