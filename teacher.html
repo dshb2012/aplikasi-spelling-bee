@@ -465,7 +465,18 @@ th:nth-child(4),td:nth-child(4){width:20%;}
   box-shadow:0 6px 14px rgba(0,0,0,.12);
   display:none;
 }
-
+.retryUpload{
+  display:inline-block;
+  margin-top:12px;
+  padding:10px 16px;
+  border-radius:14px;
+  background:#f2e590;
+  color:#38b6ff;
+  font-weight:900;
+  cursor:pointer;
+  box-shadow:0 4px 10px rgba(0,0,0,.12);
+}
+  
 @media (orientation: landscape) and (min-width: 768px){
 
   #top{
@@ -554,8 +565,18 @@ th:nth-child(4),td:nth-child(4){width:20%;}
 
 <div id="csvError">
   ⚠️ File CSV tidak sesuai format  
-  <br><small>Pastikan format file .CSV dan format kolom: No, Word, Sentence</small>
+  <br>
+  <small>
+    Pastikan format file .CSV dan kolom: No, Word, Sentence
+  </small>
+
+  <br><br>
+
+  <label for="fileInput" class="retryUpload">
+    📂 Upload ulang file
+  </label>
 </div>
+
 
   
 <div class="wrapper">
@@ -701,7 +722,8 @@ function timer20(){
 
 /* CSV */
 function loadCSV(e){
-// 🔴 RESET DATA SEBELUM LOAD FILE BARU
+e.target.value = ""; // reset input file
+  // 🔴 RESET DATA SEBELUM LOAD FILE BARU
   stopAll();
   rows = [];
   current = 0;
@@ -885,6 +907,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
