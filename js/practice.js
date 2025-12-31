@@ -180,11 +180,13 @@ function stopTimer(){
 
 /* ===== PLAY QUESTION ===== */
 function playQuestion(){
+  // safety
   if(currentIndex >= session.length) return;
 
-  // hentikan semua suara sebelumnya
+  // hentikan suara sebelumnya
   speechSynthesis.cancel();
 
+  // 🔒 KUNCI INTERAKSI
   isReading = true;
   isAnswering = false;
 
@@ -195,48 +197,48 @@ function playQuestion(){
   timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
 
+  // set soal
   currentQuestion = session[currentIndex];
-
   questionInfo.textContent =
     `Soal ${currentIndex + 1} dari ${session.length}`;
 
   answerInput.value = "";
-  answerInput.focus();
+  answerInput.blur(); // jangan fokus dulu
 
-  // 🔊 AUDIO = TAMBAHAN, BUKAN KONTROL FLOW
-  try {
-    const u1 = new SpeechSynthesisUtterance(currentQuestion.word);
-    const u2 = new SpeechSynthesisUtterance(currentQuestion.sentence);
-    const u3 = new SpeechSynthesisUtterance(currentQuestion.word);
+  // ===== SPEECH CHAIN (PALING AMAN DI HP) =====
+  const u1 = new SpeechSynthesisUtterance(currentQuestion.word);
+  const u2 = new SpeechSynthesisUtterance(currentQuestion.sentence);
+  const u3 = new SpeechSynthesisUtterance(currentQuestion.word);
 
-    [u1,u2,u3].forEach(u=>{
-      u.lang = "en-US";
-      u.rate = 0.9;
-    });
+  [u1, u2, u3].forEach(u=>{
+    u.lang = "en-US";
+    u.rate = 0.9;
+  });
 
-    speechSynthesis.speak(u1);
-    speechSynthesis.speak(u2);
-    speechSynthesis.speak(u3);
-  } catch(e){
-    console.log("Speech gagal, lanjut tanpa suara");
-  }
+  u1.onend = () => speechSynthesis.speak(u2);
+  u2.onend = () => speechSynthesis.speak(u3);
 
-  // ⏱️ FLOW SOAL TIDAK NUNGGU AUDIO
-  setTimeout(()=>{
+  // 🔓 BARU BOLEH JAWAB & TIMER SETELAH SELESAI BACA
+  u3.onend = () => {
     isReading = false;
     isAnswering = true;
 
     submitBtn.disabled = false;
     submitBtn.style.opacity = 1;
 
-    startTimer();
-  }, 2000); // estimasi waktu baca
+    answerInput.focus();
+    startTimer();   // ⏱️ TIMER BARU JALAN DI SINI
+  };
+
+  speechSynthesis.speak(u1);
 }
 
 function handleTimeout(){
   if(!isAnswering) return;
 
   isAnswering = false;
+  stopTimer();
+
   submitBtn.disabled = true;
   submitBtn.style.opacity = 0.5;
 
@@ -272,8 +274,7 @@ function submitAnswer(){
   submitBtn.style.opacity = 0.5;
 
   const userAns = answerInput.value.trim().toLowerCase();
-  const correctAns = currentQuestion.word.toLowerCase();
-  const correct = userAns === correctAns;
+  const correct = userAns === currentQuestion.word.toLowerCase();
 
   if(correct) score++;
 
@@ -283,7 +284,7 @@ function submitAnswer(){
     correct
   });
 
-  nextQuestion(); // ➡️ LANGSUNG KE SOAL BERIKUTNYA
+  nextQuestion(); // ➡️ langsung lanjut
 }
 
 
