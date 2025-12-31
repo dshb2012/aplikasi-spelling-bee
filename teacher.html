@@ -724,59 +724,47 @@ function timer20(){
 
 /* CSV */
 function loadCSV(e){
-  const file = e.target.files[0];
-  if(!file) return;
 
-  stopAll();
+  // RESET
+  document.getElementById("csvError").style.display = "none";
+  document.getElementById("startMessage").style.display = "none";
+
   rows = [];
   current = 0;
   tbody.innerHTML = "";
 
-  document.getElementById("csvError").style.display = "none";
-  document.getElementById("startMessage").classList.add("hidden");
+  stopAll();
 
-  const reader = new FileReader();
+  const file = e.target.files[0];
+  if(!file) return;
 
-  reader.onload = () => {
-    const lines = reader.result
-      .trim()
-      .split("\n")
-      .map(l => l.split(","));
+  const r = new FileReader();
+  r.onload = () => {
+    const lines = r.result.trim().split("\n").map(l => l.split(","));
 
-    // ❌ FORMAT SALAH
+    // ❌ CSV SALAH
     if(lines.length < 2 || lines[0].length < 3){
+      document.getElementById("csvError").style.display = "block";
+      return;
+    }
 
-  // 🔥 HANCURKAN startMessage AGAR TIDAK MENUTUP KLIK
-  const startMsg = document.getElementById("startMessage");
-  if(startMsg) startMsg.remove();
-
-  // 🔔 TAMPILKAN WARNING
-  const err = document.getElementById("csvError");
-  err.style.display = "block";
-
-  return;
-}
-
-    // ✅ FORMAT BENAR
-    document.getElementById("csvError").style.display = "none";
-
+    // ✅ CSV BENAR
     lines.shift();
     rows = lines;
+
     render();
 
-    document.getElementById("startMessage").classList.add("hidden");
-    document.getElementById("bottomUpload").style.display = "flex";
+    document.getElementById("tableHead").style.display = "table-header-group";
+    document.getElementById("topBtns").classList.remove("hiddenTop");
     document.getElementById("timer").style.display = "flex";
     document.getElementById("instructionBtn").style.display = "flex";
-    document.getElementById("topBtns").classList.remove("hiddenTop");
-    document.getElementById("tableHead").style.display = "table-header-group";
-
-    // ✅ reset SETELAH SUKSES
-    e.target.value = "";
+    document.getElementById("bottomUpload").style.display = "flex";
   };
 
-  reader.readAsText(file);
+  r.readAsText(file);
+  e.target.value = "";
 }
+
 function triggerUpload(){
   const input = document.getElementById("fileInput");
   input.value = ""; // 🔑 reset agar bisa upload file sama
@@ -917,6 +905,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
