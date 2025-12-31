@@ -53,6 +53,15 @@ function speak(text){
   });
 }
 
+function ensureAudioContext(){
+  if(!audioCtx){
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
+  if(audioCtx.state === "suspended"){
+    audioCtx.resume();
+  }
+}
+
 function tickSound(){
   if(!audioCtx) return;
   const o = audioCtx.createOscillator();
@@ -156,25 +165,25 @@ async function readyCountdown(){
 /* ===== TIMER ===== */
 function startTimer(){
   stopTimer();
+
+  ensureAudioContext(); // 🔊 PAKSA AUDIO AKTIF
+
   timeLeft = 20;
   timerEl.textContent = `⏱️ ${timeLeft}`;
 
   timerInterval = setInterval(()=>{
     timeLeft--;
     timerEl.textContent = `⏱️ ${timeLeft}`;
-    if(timeLeft > 0) tickSound();
+
+    if(timeLeft > 0){
+      tickSound(); // 🔔 bunyi tiap detik
+    }
 
     if(timeLeft <= 0){
       stopTimer();
       handleTimeout();
     }
   },1000);
-}
-function stopTimer(){
-  if(timerInterval){
-    clearInterval(timerInterval);
-    timerInterval = null;
-  }
 }
 
 
