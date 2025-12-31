@@ -453,6 +453,11 @@ th:nth-child(4),td:nth-child(4){width:20%;}
   opacity:.6;
 }
 
+  #startMessage.hidden {
+  display: none;
+  pointer-events: none;
+}
+
 #csvError{
   margin:200px auto 40px;
   max-width:320px;
@@ -564,10 +569,10 @@ th:nth-child(4),td:nth-child(4){width:20%;}
 </label>
 
 <div id="csvError">
-  ⚠️ File CSV tidak sesuai format  
+  ⚠️ File yang diunduh tidak sesuai format  
   <br>
   <small>
-    Pastikan format file .CSV dan kolom: No, Word, Sentence
+    Pastikan format file .CSV dan format kolom: No, Word, Sentence
   </small>
 
   <br><br>
@@ -730,6 +735,9 @@ function loadCSV(e){
   current = 0;
   tbody.innerHTML = "";
 
+  document.getElementById("csvError").style.display = "none";
+  document.getElementById("startMessage").classList.add("hidden");
+
   const reader = new FileReader();
 
   reader.onload = () => {
@@ -756,7 +764,7 @@ function loadCSV(e){
     rows = lines;
     render();
 
-    document.getElementById("startMessage").style.display = "none";
+    document.getElementById("startMessage").classList.add("hidden");
     document.getElementById("bottomUpload").style.display = "flex";
     document.getElementById("timer").style.display = "flex";
     document.getElementById("instructionBtn").style.display = "flex";
@@ -905,6 +913,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
