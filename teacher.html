@@ -561,28 +561,22 @@ th:nth-child(4),td:nth-child(4){width:20%;}
   
 <!-- TABLE -->
 <!-- START MESSAGE -->
-<label id="startMessage" for="fileInput">
+<div id="startMessage" onclick="triggerUpload()">
   <div class="box">
     📂 <b>Upload a file  to start practice</b>
        <span>Unggah dokumen CSV untuk memulai latihan Spelling Bee</span>
   </div>
+</div>
 </label>
 
-<div id="csvError">
+<div id="csvError" onclick="triggerUpload()">
   ⚠️ File yang diunduh tidak sesuai format  
   <br>
   <small>
-    Pastikan format file .CSV dan format kolom: No, Word, Sentence
+    Pastikan format file .CSV dan format kolom: No, Word, Sentence  
+    <br><b>Tap di sini untuk upload ulang</b>
   </small>
-
-  <br><br>
-
-  <label for="fileInput" class="retryUpload">
-    📂 Upload ulang file
-  </label>
 </div>
-
-
   
 <div class="wrapper">
 <table>
@@ -748,15 +742,18 @@ function loadCSV(e){
 
     // ❌ FORMAT SALAH
     if(lines.length < 2 || lines[0].length < 3){
-  document.getElementById("csvError").style.display = "block";
 
-  // ⛔ SEMBUNYIKAN POPUP UPLOAD
-  document.getElementById("startMessage").style.display = "none";
+  // 🔥 HANCURKAN startMessage AGAR TIDAK MENUTUP KLIK
+  const startMsg = document.getElementById("startMessage");
+  if(startMsg) startMsg.remove();
 
-  // ✅ RESET FILE INPUT (AGAR BISA UPLOAD ULANG)
-  e.target.value = "";
+  // 🔔 TAMPILKAN WARNING
+  const err = document.getElementById("csvError");
+  err.style.display = "block";
+
   return;
 }
+
     // ✅ FORMAT BENAR
     document.getElementById("csvError").style.display = "none";
 
@@ -777,7 +774,11 @@ function loadCSV(e){
 
   reader.readAsText(file);
 }
-
+function triggerUpload(){
+  const input = document.getElementById("fileInput");
+  input.value = ""; // 🔑 reset agar bisa upload file sama
+  input.click();
+}
 function render(){
   tbody.innerHTML="";
   rows.forEach((r,i)=>{
@@ -913,6 +914,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
