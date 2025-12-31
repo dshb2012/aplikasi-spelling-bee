@@ -722,54 +722,50 @@ function timer20(){
 
 /* CSV */
 function loadCSV(e){
-e.target.value = ""; // reset input file
-  // 🔴 RESET DATA SEBELUM LOAD FILE BARU
+  const file = e.target.files[0];
+  if(!file) return;
+
   stopAll();
   rows = [];
   current = 0;
   tbody.innerHTML = "";
-  
-  const r=new FileReader();
-  r.onload=()=>{
-    const lines=r.result.trim().split("\n").map(l=>l.split(","));
 
-    // VALIDASI CSV
-   if(lines.length < 2 || lines[0].length < 3){
+  const reader = new FileReader();
 
-  // 1. SEMBUNYIKAN START MESSAGE
-  document.getElementById("startMessage").style.display = "none";
+  reader.onload = () => {
+    const lines = reader.result
+      .trim()
+      .split("\n")
+      .map(l => l.split(","));
 
-  // 2. TAMPILKAN ERROR DI BAWAH
-  const err = document.getElementById("csvError");
-  err.style.display = "block";
+    // ❌ FORMAT SALAH
+    if(lines.length < 2 || lines[0].length < 3){
+      document.getElementById("csvError").style.display = "block";
 
-  // 3. SCROLL KE ERROR (PENTING DI HP)
-  err.scrollIntoView({ behavior: "smooth", block: "center" });
+      // ✅ reset DI SINI (AMAN)
+      e.target.value = "";
+      return;
+    }
 
-  return;
-}
-    document.getElementById("csvError").style.display="none";
-    
+    // ✅ FORMAT BENAR
+    document.getElementById("csvError").style.display = "none";
+
     lines.shift();
-    rows=lines;
+    rows = lines;
     render();
 
     document.getElementById("startMessage").style.display = "none";
-    
-    // TAMPILKAN UPLOAD BAWAH
     document.getElementById("bottomUpload").style.display = "flex";
-
-    // TAMPILKAN TIMER & INSTRUCTION
     document.getElementById("timer").style.display = "flex";
     document.getElementById("instructionBtn").style.display = "flex";
-    
-    // TAMPILKAN TOMBOL ATAS SETELAH UPLOAD
     document.getElementById("topBtns").classList.remove("hiddenTop");
-
-    //TAMPILKAN HEADER TABEL
     document.getElementById("tableHead").style.display = "table-header-group";
+
+    // ✅ reset SETELAH SUKSES
+    e.target.value = "";
   };
-  r.readAsText(e.target.files[0]);
+
+  reader.readAsText(file);
 }
 
 function render(){
@@ -907,6 +903,7 @@ document.addEventListener("click", function(e){
  
 </body>
 </html>
+
 
 
 
